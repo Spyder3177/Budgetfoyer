@@ -7,7 +7,21 @@ let state=load(), active="dashboard";
 function load(){try{return JSON.parse(localStorage.getItem(STORE))||{tx:[],rules:DEFAULT_RULES,period:24}}catch(e){return{tx:[],rules:DEFAULT_RULES,period:24}}}
 function save(){localStorage.setItem(STORE,JSON.stringify(state))}
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-function norm(s){return String(s??"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[’']/g," ").replace(/\s+/g," ").trim()}
+function norm(s){
+  return String(s??"")
+    .replace(/�/g,"E")
+    .replace(/Ã©|Ã¨|Ãª|Ã«/g,"e")
+    .replace(/Ã /g,"a")
+    .replace(/Ã¹/g,"u")
+    .replace(/Ã´/g,"o")
+    .replace(/Ã®/g,"i")
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/[’']/g," ")
+    .replace(/\s+/g," ")
+    .trim()
+}
 function money(n){return (n||0).toLocaleString("fr-FR",{style:"currency",currency:"EUR"})}
 function amount(v){let s=String(v??"").trim();if(!s)return 0;s=s.replace(/\u00A0/g," ").replace(/€/g,"").replace(/\s/g,"");let neg=false;if(/^\(.*\)$/.test(s)){neg=true;s=s.slice(1,-1)}if(s.endsWith("-")){neg=true;s=s.slice(0,-1)}if(s.startsWith("-")){neg=true;s=s.slice(1)}s=s.replace(/\./g,"").replace(",",".");let n=Number(s);return Number.isFinite(n)?(neg?-Math.abs(n):n):0}
 function dateParse(v){let s=String(v??"").trim();let m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);if(m){let y=m[3].length==2?"20"+m[3]:m[3];return `${y}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`}m=s.match(/^(\d{4})[\/.-](\d{1,2})[\/.-](\d{1,2})$/);if(m)return`${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;let d=new Date(s);return isNaN(d)?null:d.toISOString().slice(0,10)}
@@ -15,15 +29,29 @@ function delimiter(text){let sample=text.split(/\r?\n/).filter(Boolean).slice(0,
 function split(line,d){let out=[],cur="",q=false;for(let i=0;i<line.length;i++){let c=line[i];if(c=='"'){if(q&&line[i+1]=='"'){cur+='"';i++}else q=!q}else if(c==d&&!q){out.push(cur.trim().replace(/^"|"$/g,""));cur=""}else cur+=c}out.push(cur.trim().replace(/^"|"$/g,""));return out}
 function headerScore(cols){let j=norm(cols.join(" ")),score=0;["DATE","LIBELLE","OPERATION","DEBIT","CREDIT","MONTANT","VALEUR"].forEach(k=>{if(j.includes(k))score+=3});return score+Math.min(cols.length,8)}
 function findHeader(lines,d){let best={i:0,h:split(lines[0]||"",d),s:-1};lines.slice(0,20).forEach((l,i)=>{let h=split(l,d),s=headerScore(h);if(s>best.s)best={i,h,s}});return best}
-function col(headers, words){let hs=headers.map(norm);for(let group of words){let ws=group.map(norm);let exact=hs.findIndex(h=>ws.includes(h));if(exact>=0)return exact;let partial=hs.findIndex(h=>ws.some(w=>h.includes(w)||w.includes(h)));if(partial>=0)return partial}return -1}
+function col(headers, words){
+  let hs=headers.map(norm);
+  for(let group of words){
+    let ws=group.map(norm).filter(Boolean);
+    let exact=hs.findIndex(h=>h && ws.includes(h));
+    if(exact>=0)return exact;
+    let partial=hs.findIndex(h=>h && ws.some(w=>w && (h.includes(w)||w.includes(h))));
+    if(partial>=0)return partial;
+  }
+  return -1
+}
 function parseCSV(text){
  text=text.replace(/^\uFEFF/,"");let d=delimiter(text);let lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)throw Error("Fichier vide");
  let hi=findHeader(lines,d), h=hi.h;
  let dateI=col(h,[["DATE OPERATION","DATE D OPERATION","DATE DE L OPERATION","DATE"],["DATE COMPTABLE"],["DATE VALEUR"]]);
- let libI=col(h,[["LIBELLE","LIBELLE OPERATION","LIBELLE DE L OPERATION"],["DESCRIPTION","DESIGNATION","INTITULE"],["OPERATION","NATURE"]]);
- let debitI=col(h,[["DEBIT EUROS","DEBIT EURO","DEBIT"],["MONTANT DEBIT","SORTIE","DEPENSE"]]);
- let creditI=col(h,[["CREDIT EUROS","CREDIT EURO","CREDIT"],["MONTANT CREDIT","ENTREE","RECETTE"]]);
+ let libI=col(h,[["LIBELLE","LIBEL","LIBEL E","LIBELLE OPERATION","LIBELLE DE L OPERATION"],["DESCRIPTION","DESIGNATION","INTITULE"],["OPERATION","NATURE"]]);
+ let debitI=col(h,[["DEBIT EUROS","DEBIT EURO","DEBIT","D BIT EUROS","D EBIT EUROS"],["MONTANT DEBIT","SORTIE","DEPENSE"]]);
+ let creditI=col(h,[["CREDIT EUROS","CREDIT EURO","CREDIT","CR DIT EUROS","CR EDIT EUROS"],["MONTANT CREDIT","ENTREE","RECETTE"]]);
  let montantI=col(h,[["MONTANT EUROS","MONTANT EURO","MONTANT"],["AMOUNT","VALEUR"]]);
+ 
+ if((libI<0||libI===4) && h.length>=4 && norm(h[0]).includes("DATE")) libI=1;
+ if((debitI<0||debitI===4) && h.length>=4 && norm(h[2]).includes("DEBIT")) debitI=2;
+ if((creditI<0||creditI===4) && h.length>=4 && norm(h[3]).includes("CREDIT")) creditI=3;
  let debug=`Séparateur détecté : ${d=="\t"?"tabulation":d}\nLigne entête : ${hi.i+1}\nColonnes détectées :\n${h.map((x,i)=>`${i}: ${x}`).join("\n")}\n\nIndex date=${dateI}, libellé=${libI}, débit=${debitI}, crédit=${creditI}, montant=${montantI}`;
  if(dateI<0||libI<0||(debitI<0&&creditI<0&&montantI<0)){let e=Error("Colonnes non reconnues. Ouvre Diagnostic CSV et envoie-moi les colonnes affichées.");e.debug=debug;throw e}
  let rows=[];
