@@ -2,176 +2,114 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Budget Foyer</title>
-  <meta name="theme-color" content="#111827" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <title>Budget Foyer V4</title>
+  <meta name="theme-color" content="#f5f5f7" />
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="logo">BF</div>
-        <div>
-          <h1>Budget Foyer</h1>
-          <p>Analyse CSV bancaire</p>
-        </div>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1 id="title">Dashboard</h1>
+        <p id="subtitle">Vue globale du foyer</p>
       </div>
+      <select id="period">
+        <option value="6">6 mois</option>
+        <option value="12">12 mois</option>
+        <option value="24" selected>24 mois</option>
+        <option value="36">36 mois</option>
+        <option value="999">Tout</option>
+      </select>
+    </header>
 
-      <nav>
-        <button class="nav active" data-view="dashboard">Dashboard</button>
-        <button class="nav" data-view="import">Import CSV</button>
-        <button class="nav" data-view="transactions">Transactions</button>
-        <button class="nav" data-view="categories">Catégories</button>
-        <button class="nav" data-view="settings">Réglages</button>
-      </nav>
-
-      <div class="side-card">
-        <span>Période analysée</span>
-        <strong id="periodLabel">24 mois</strong>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div>
-          <h2 id="pageTitle">Dashboard</h2>
-          <p id="pageSubtitle">Vue globale des finances du foyer</p>
+    <main id="pages" class="pages">
+      <section class="page active" data-page="dashboard">
+        <div class="kpi-grid">
+          <article><span>Dépenses</span><strong id="kpiExpenses">0 €</strong><small id="kpiExpensesAvg">0 €/mois</small></article>
+          <article><span>Revenus</span><strong id="kpiIncome">0 €</strong><small id="kpiIncomeAvg">0 €/mois</small></article>
+          <article><span>Reste moyen</span><strong id="kpiBalance">0 €</strong><small>par mois</small></article>
+          <article><span>Opérations</span><strong id="kpiCount">0</strong><small id="kpiMonths">0 mois</small></article>
         </div>
-        <div class="actions">
-          <select id="periodSelect">
-            <option value="6">6 mois</option>
-            <option value="12">12 mois</option>
-            <option value="24" selected>24 mois</option>
-            <option value="36">36 mois</option>
-            <option value="999">Tout</option>
+        <div class="dashboard-grid">
+          <article class="panel chart-panel">
+            <div class="panel-head"><h2>Évolution</h2><span>Dépenses / revenus</span></div>
+            <canvas id="chart"></canvas>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h2>Top dépenses</h2><span>Moyenne/mois</span></div>
+            <div id="topCats" class="bars"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" data-page="import">
+        <article class="panel import-card">
+          <h2>Importer un CSV</h2>
+          <p>Compatible Crédit Agricole et exports bancaires classiques. L’app détecte automatiquement les colonnes.</p>
+          <label>Compte</label>
+          <select id="account">
+            <option>Jérémy</option>
+            <option>Conjointe</option>
+            <option>Foyer</option>
           </select>
-          <button id="exportBtn" class="btn">Exporter CSV</button>
-        </div>
-      </header>
-
-      <section id="dashboard" class="view active">
-        <div class="kpis">
-          <div class="card"><span>Dépenses période</span><strong id="kpiExpenses">0 €</strong><small id="kpiExpensesAvg">0 €/mois</small></div>
-          <div class="card"><span>Revenus période</span><strong id="kpiIncome">0 €</strong><small id="kpiIncomeAvg">0 €/mois</small></div>
-          <div class="card"><span>Reste moyen</span><strong id="kpiBalance">0 €</strong><small>revenus - dépenses / mois</small></div>
-          <div class="card"><span>Transactions</span><strong id="kpiCount">0</strong><small id="kpiMonths">0 mois analysés</small></div>
-        </div>
-
-        <div class="grid">
-          <div class="panel wide">
-            <div class="panel-head">
-              <h3>Évolution mensuelle</h3>
-              <span>Dépenses / revenus / reste</span>
-            </div>
-            <canvas id="monthlyChart" height="240"></canvas>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Top dépenses</h3>
-              <span>Moyenne mensuelle</span>
-            </div>
-            <div id="topCategories" class="bars"></div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <h3>Dépenses fixes détectées</h3>
-              <span>Libellés récurrents</span>
-            </div>
-            <div id="recurringList" class="list"></div>
-          </div>
-
-          <div class="panel wide">
-            <div class="panel-head">
-              <h3>Moyenne mensuelle par catégorie</h3>
-              <span>Sur la période sélectionnée</span>
-            </div>
-            <div class="table-wrap">
-              <table id="categoryTable">
-                <thead><tr><th>Catégorie</th><th>Total</th><th>Moyenne / mois</th><th>Nb opérations</th></tr></thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+          <label class="drop" for="file">
+            <input id="file" type="file" accept=".csv,text/csv,.txt" multiple />
+            <strong>Choisir CSV</strong>
+            <span>Débit/Crédit ou Montant unique</span>
+          </label>
+          <div id="importMessage" class="message"></div>
+          <details id="debugBox" class="debug">
+            <summary>Diagnostic CSV</summary>
+            <pre id="debugText"></pre>
+          </details>
+        </article>
       </section>
 
-      <section id="import" class="view">
-        <div class="panel import-panel">
-          <h3>Importer un CSV Crédit Agricole</h3>
-          <p>Colonnes attendues : Date, Libellé, Débit euros, Crédit euros. L’appli accepte aussi les séparateurs ; , tabulation.</p>
-
-          <div class="import-box">
-            <label>Compte</label>
-            <select id="accountSelect">
-              <option value="Jérémy">Jérémy</option>
-              <option value="Conjointe">Conjointe</option>
-              <option value="Foyer">Foyer</option>
-            </select>
-
-            <label class="dropzone" for="csvFile">
-              <input type="file" id="csvFile" accept=".csv,text/csv" multiple />
-              <strong>Choisir un ou plusieurs fichiers CSV</strong>
-              <span>Les doublons sont évités automatiquement</span>
-            </label>
-          </div>
-
-          <div id="importResult" class="notice"></div>
-        </div>
-      </section>
-
-      <section id="transactions" class="view">
+      <section class="page" data-page="transactions">
         <div class="filters">
-          <input id="searchInput" placeholder="Rechercher un libellé, une catégorie..." />
-          <select id="accountFilter"><option value="">Tous les comptes</option></select>
-          <select id="categoryFilter"><option value="">Toutes les catégories</option></select>
-          <button id="clearFilters" class="btn secondary">Réinitialiser</button>
+          <input id="search" placeholder="Rechercher..." />
+          <select id="accountFilter"><option value="">Comptes</option></select>
+          <select id="catFilter"><option value="">Catégories</option></select>
         </div>
-        <div class="panel">
-          <div class="panel-head">
-            <h3>Transactions</h3>
-            <span id="transactionCount">0 opération</span>
-          </div>
-          <div class="table-wrap">
-            <table id="transactionsTable">
-              <thead><tr><th>Date</th><th>Compte</th><th>Libellé</th><th>Catégorie</th><th>Débit</th><th>Crédit</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
+        <article class="panel table-panel">
+          <div class="panel-head"><h2>Transactions</h2><span id="txCount">0</span></div>
+          <div class="tx-list" id="txList"></div>
+        </article>
       </section>
 
-      <section id="categories" class="view">
-        <div class="panel">
-          <div class="panel-head">
-            <h3>Règles de catégorisation</h3>
-            <span>Ajoute un mot-clé pour automatiser les prochains imports</span>
-          </div>
+      <section class="page" data-page="categories">
+        <article class="panel rules-card">
+          <div class="panel-head"><h2>Catégories</h2><span>Règles auto</span></div>
           <div class="rule-form">
-            <input id="ruleKeyword" placeholder="Mot-clé ex : LECLERC" />
-            <select id="ruleCategory"></select>
-            <button id="addRuleBtn" class="btn">Ajouter règle</button>
+            <input id="ruleKey" placeholder="Mot-clé ex : LECLERC" />
+            <select id="ruleCat"></select>
+            <button id="addRule">Ajouter</button>
           </div>
-          <div id="rulesList" class="chips"></div>
-        </div>
+          <div id="rules" class="chips"></div>
+        </article>
       </section>
 
-      <section id="settings" class="view">
-        <div class="panel">
-          <h3>Réglages</h3>
-          <div class="settings-grid">
-            <button id="recatBtn" class="btn">Recatégoriser toutes les opérations</button>
-            <button id="clearDataBtn" class="btn danger">Effacer toutes les données</button>
-          </div>
-          <p class="muted">Stockage local uniquement : les données restent sur cet appareil/navigateur.</p>
-        </div>
+      <section class="page" data-page="settings">
+        <article class="panel settings-card">
+          <h2>Réglages</h2>
+          <button id="recat">Recatégoriser</button>
+          <button id="export">Exporter CSV</button>
+          <button id="wipe" class="danger">Effacer les données</button>
+          <p>Les données restent dans ce navigateur.</p>
+        </article>
       </section>
     </main>
-  </div>
 
+    <nav class="tabbar">
+      <button class="tab active" data-page="dashboard" aria-label="Dashboard"><span>⌂</span></button>
+      <button class="tab" data-page="import" aria-label="Import"><span>⇧</span></button>
+      <button class="tab" data-page="transactions" aria-label="Transactions"><span>☰</span></button>
+      <button class="tab" data-page="categories" aria-label="Catégories"><span>◎</span></button>
+      <button class="tab" data-page="settings" aria-label="Réglages"><span>•••</span></button>
+    </nav>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
