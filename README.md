@@ -31,3 +31,11 @@ Pour une future V2 cloud/multi-appareils, il faudra connecter Supabase ou une ba
 - Le dashboard affiche l’essentiel sans scroll : KPI + graphique + top catégories.
 - Les longues listes scrollent à l’intérieur des tableaux, pas toute la page.
 - Optimisé pour portrait iPhone et utilisable en paysage.
+
+
+## V1.2 correction iPhone
+- Correction du chevauchement KPI / graphique sur le Dashboard.
+- Correction du panneau Transactions qui remontait sur les filtres.
+- Bouton Réinitialiser masqué sur mobile pour gagner de la place.
+- Navigation basse avec icônes plus propres.
+- Swipe gauche/droite entre Dashboard, Import, Transactions, Catégories et Réglages.

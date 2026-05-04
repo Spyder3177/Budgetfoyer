@@ -535,3 +535,218 @@ html, body {
     display: block;
   }
 }
+
+
+/* ============================================================
+   MOBILE IPHONE FIX — V1.2
+   Corrige les chevauchements visibles sur iPhone
+   + améliore les écrans plein cadre.
+   ============================================================ */
+
+@media (max-width: 760px) {
+  .main {
+    padding-top: max(18px, env(safe-area-inset-top));
+  }
+
+  .topbar {
+    height: 82px;
+    margin-bottom: 12px;
+  }
+
+  .view {
+    height: calc(100dvh - 194px);
+  }
+
+  /* Dashboard : les 4 KPI gardent leur vraie hauteur, sans chevauchement */
+  .kpis {
+    height: 166px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 79px;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .card {
+    height: 79px;
+    padding: 10px 12px;
+    overflow: hidden;
+  }
+
+  .card span {
+    display: block;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card strong {
+    font-size: 18px;
+    line-height: 1.1;
+  }
+
+  .card small {
+    font-size: 10.5px;
+    line-height: 1.1;
+  }
+
+  .grid {
+    height: calc(100% - 176px);
+    grid-template-rows: minmax(0, 43%) minmax(0, 57%);
+  }
+
+  #dashboard .panel {
+    position: relative;
+    z-index: 1;
+  }
+
+  #monthlyChart {
+    display: block;
+    width: 100%;
+  }
+
+  /* Transactions : le bouton reset ne pousse plus le panneau */
+  #transactions.active {
+    gap: 10px;
+  }
+
+  .filters {
+    height: 86px;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+  }
+
+  .filters input {
+    grid-column: span 2;
+  }
+
+  #clearFilters {
+    display: none;
+  }
+
+  #transactions .panel {
+    flex: 1;
+    min-height: 0;
+    margin-top: 0;
+  }
+
+  #transactions .table-wrap {
+    height: calc(100% - 42px);
+  }
+
+  /* Import : meilleur centrage et pas de débordement */
+  #import .panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #import .import-box {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Navigation basse : icônes propres, sans emoji système */
+  .nav::before {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+  }
+
+  .nav[data-view="dashboard"]::before { content: "⌂"; }
+  .nav[data-view="import"]::before { content: "⇧"; }
+  .nav[data-view="transactions"]::before { content: "≡"; }
+  .nav[data-view="categories"]::before { content: "◎"; }
+  .nav[data-view="settings"]::before { content: "•••"; font-size: 18px; letter-spacing: 2px; }
+
+  /* Mini feedback swipe */
+  .main.swiping-left .view.active,
+  .main.swiping-right .view.active {
+    transition: transform .18s ease, opacity .18s ease;
+  }
+
+  .main.swiping-left .view.active {
+    transform: translateX(-8px);
+    opacity: .96;
+  }
+
+  .main.swiping-right .view.active {
+    transform: translateX(8px);
+    opacity: .96;
+  }
+}
+
+@media (max-width: 390px) {
+  .topbar {
+    height: 76px;
+  }
+
+  .view {
+    height: calc(100dvh - 186px);
+  }
+
+  .kpis {
+    height: 154px;
+    grid-auto-rows: 72px;
+    gap: 9px;
+  }
+
+  .card {
+    height: 72px;
+    padding: 9px 10px;
+  }
+
+  .card strong {
+    font-size: 16px;
+  }
+
+  .grid {
+    height: calc(100% - 164px);
+    grid-template-rows: minmax(0, 42%) minmax(0, 58%);
+  }
+
+  .filters {
+    height: 82px;
+  }
+}
+
+@media (max-height: 760px) and (max-width: 430px) {
+  .topbar {
+    height: 68px;
+  }
+
+  .topbar p {
+    display: none;
+  }
+
+  .view {
+    height: calc(100dvh - 176px);
+  }
+
+  .kpis {
+    height: 76px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: 76px;
+  }
+
+  .card {
+    height: 76px;
+    padding: 8px 7px;
+  }
+
+  .card span {
+    font-size: 9.5px;
+  }
+
+  .card strong {
+    font-size: 14px;
+  }
+
+  .card small {
+    display: none;
+  }
+
+  .grid {
+    height: calc(100% - 86px);
+    grid-template-rows: minmax(0, 45%) minmax(0, 55%);
+  }
+}

@@ -298,3 +298,62 @@ document.getElementById("exportBtn").addEventListener("click",()=>{
 
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
 render();
+
+
+/* ============================================================
+   Swipe mobile entre les écrans — V1.2
+   Balayage gauche/droite pour passer entre les onglets du bas.
+   ============================================================ */
+(function enableMobileSwipeNavigation(){
+  const order = ["dashboard", "import", "transactions", "categories", "settings"];
+  const main = document.querySelector(".main");
+  let startX = 0, startY = 0, startTime = 0, tracking = false;
+
+  function activeIndex(){
+    const active = document.querySelector(".nav.active");
+    return Math.max(0, order.indexOf(active?.dataset?.view || "dashboard"));
+  }
+
+  function goTo(index){
+    if(index < 0 || index >= order.length) return;
+    const btn = document.querySelector(`.nav[data-view="${order[index]}"]`);
+    if(btn) btn.click();
+  }
+
+  document.addEventListener("touchstart", (e) => {
+    if(e.touches.length !== 1) return;
+    const target = e.target;
+    if(target.closest("input, select, button, table, .table-wrap, .bars, .chips, .list")) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startTime = Date.now();
+    tracking = true;
+  }, {passive:true});
+
+  document.addEventListener("touchmove", (e) => {
+    if(!tracking || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if(Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      main?.classList.toggle("swiping-left", dx < 0);
+      main?.classList.toggle("swiping-right", dx > 0);
+    }
+  }, {passive:true});
+
+  document.addEventListener("touchend", (e) => {
+    if(!tracking) return;
+    tracking = false;
+    main?.classList.remove("swiping-left", "swiping-right");
+
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+    const elapsed = Date.now() - startTime;
+
+    if(Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5 && elapsed < 700) {
+      const i = activeIndex();
+      if(dx < 0) goTo(i + 1);
+      else goTo(i - 1);
+    }
+  }, {passive:true});
+})();
