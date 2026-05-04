@@ -170,7 +170,7 @@ function renderRecurring(rows){
 function renderMonthlyChart(rows){
   const canvas = document.getElementById("monthlyChart"), ctx = canvas.getContext("2d");
   const scale = window.devicePixelRatio || 1;
-  const w = canvas.clientWidth || 800, h = 240;
+  const w = canvas.clientWidth || 800, h = canvas.clientHeight || 240;
   canvas.width = w*scale; canvas.height = h*scale; ctx.setTransform(scale,0,0,scale,0,0);
   ctx.clearRect(0,0,w,h);
   const months = monthsInData(rows);

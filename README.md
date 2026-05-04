@@ -23,3 +23,11 @@ Application web locale pour analyser les CSV bancaires Crédit Agricole.
 ## Important
 Les données sont stockées uniquement dans le navigateur utilisé.
 Pour une future V2 cloud/multi-appareils, il faudra connecter Supabase ou une base locale plus robuste.
+
+
+## V1.1 mobile iPhone
+- Navigation déplacée en bas comme une app mobile.
+- Chaque écran principal est bloqué à la hauteur de l’iPhone.
+- Le dashboard affiche l’essentiel sans scroll : KPI + graphique + top catégories.
+- Les longues listes scrollent à l’intérieur des tableaux, pas toute la page.
+- Optimisé pour portrait iPhone et utilisable en paysage.
