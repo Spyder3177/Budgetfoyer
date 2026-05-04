@@ -1,6 +1,6 @@
 {
-  "name": "Budget Foyer",
-  "short_name": "Budget Foyer",
+  "name": "Budget Foyer V3",
+  "short_name": "Budget V3",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f5f5f7",
